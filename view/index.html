@@ -64,12 +64,43 @@ var roadSizes = {
   "rail": "0px",
   "path": "0.5px"
 };
-new L.TileLayer.d3_topoJSON("http://tile.openstreetmap.us/vectiles-highroad/{z}/{x}/{y}.topojson", {
-  class: "road",
-  layerName: "vectile",
-  style: function(d) { return "stroke-width: " + roadSizes[d.properties.kind]; }
-}).addTo(map);
 
+var cities;
+d3.tsv('cities.tsv', function(err, data) {
+  
+  data.forEach(function(c) {
+    c.left   = +c.left;
+    c.right  = +c.right;
+    c.top    = +c.top;
+    c.bottom = +c.bottom;
+  });
+  cities = d3.nest()
+    .key(function(c) { return c.name; })
+    .rollup(function(d) { return d[0]; })
+    .map(data);
+  console.log(cities);
+  
+  new L.TileLayer.d3_topoJSON("http://tile.openstreetmap.us/vectiles-highroad/{z}/{x}/{y}.topojson"  , {
+    class: "road",
+    layerName: "vectile",
+    style: function(d) { return "stroke-width: " + roadSizes[d.properties.kind]; }
+  }).addTo(map);
+
+  var currentCityIndex = 0;
+  window.nextCity = function() {
+    currentCityIndex++;
+    var city = cities.values()[currentCityIndex];
+    setCity(city);
+  }
+
+  window.setCity = function(city) {
+    console.log('setting city: ' + city.name);
+    var x = (city.left + city.right) / 2;
+    var y = (city.bottom + city.top) / 2;
+    map.setView([y, x], 10);
+  }
+
+});
 
 </script>
 </body></html>
