@@ -46,7 +46,7 @@ img { -webkit-filter: grayscale(100%) brightness(40%) contrast(150%);}
 <script type="text/javascript">
 
 // Construct map, center if no location provided
-var map = L.map('map', { minZoom: 7, maxZoom: 15 } );
+var map = L.map('map', { minZoom: 10, maxZoom: 15 } );
 
 var hash = new L.Hash(map);
 if (!window.location.hash) {
@@ -89,15 +89,18 @@ d3.tsv('cities.tsv', function(err, data) {
   var currentCityIndex = 0;
   window.nextCity = function() {
     currentCityIndex++;
-    var city = cities.values()[currentCityIndex];
+    var city = d3.values(cities)[currentCityIndex];
     setCity(city);
   }
 
   window.setCity = function(city) {
-    console.log('setting city: ' + city.name);
     var x = (city.left + city.right) / 2;
     var y = (city.bottom + city.top) / 2;
-    map.setView([y, x], 10);
+    var southWest = L.latLng(city.bottom, city.left),
+        northEast = L.latLng(city.top, city.right),
+        bounds = L.latLngBounds(southWest, northEast);
+    map.fitBounds(bounds);
+    console.log('setting city: ' + city.name, [y, x]);
   }
 
 });
