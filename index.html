@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css" />
 <![endif]-->
 <script src="leaflet.js"></script>
-<!--<script src="http://www.somebits.com/rivers/lib/leaflet-hash.js"></script>-->
 <script src="d3.v3.min.js" charset="utf-8"></script>
 <script src="topojson.v1.min.js"></script>
 <script src="TileLayer.d3_topoJSON.js"></script>
@@ -97,7 +96,7 @@ d3.tsv('cities.tsv', function(err, data) {
   
   d3.select(".city-picker")
     .on("change", function() {
-      console.log("selected ", d3.event);
+      console.log("selected ", this.options[this.selectedIndex].value);
     })
     .selectAll("option")
       .data(cities)
