@@ -119,10 +119,9 @@ d3.tsv('cities.tsv', function(err, data) {
     console.log('setting city: ' + city.name, [y, x]);
   }
 
-  var currentCityIndex = 0;
+  var nextCityIndex = 0;
   (window.nextCity = function() {
-    currentCityIndex++;
-    var city = cities[currentCityIndex];
+    var city = cities[nextCityIndex++];
     setCity(city);
   })();
 
