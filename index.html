@@ -34,6 +34,13 @@ body {
   left: 0px;
   right: 0px;
 }
+.score-container {
+  text-align: center;
+  position: absolute;
+  bottom: 10px;
+  left: 0px;
+  right: 0px;
+}
 
 path { stroke-linejoin; round; stroke-linecap: round; fill: none}
 path.river { stroke : #24b; }
@@ -53,16 +60,14 @@ img { -webkit-filter: grayscale(100%) brightness(40%) contrast(150%);}
   <select class="city-picker"></select>
 </div>
 
+<div class="score-container">
+  <span class="right"></span> right / <span class="wrong"></span> wrong</select>
+</div>
 
 <script type="text/javascript">
 
 // Construct map, center if no location provided
 var map = L.map('map', { minZoom: 10, maxZoom: 15 } );
-
-/*var hash = new L.Hash(map);
-if (!window.location.hash) {
-    map.setView([39.28, -121.18], 10);
-}*/
 
 // Add a fake GeoJSON line to coerce Leaflet into creating the <svg> tag that d3_geoJson needs
 new L.geoJson({"type": "LineString","coordinates":[[0,0],[0,0]]}).addTo(map);
@@ -76,7 +81,17 @@ var roadSizes = {
   "path": "0.5px"
 };
 
-var cities;
+var cities,
+    nextCityIndex = 0,
+    right = 0,
+    wrong = 0;
+
+var updateUi = function() {
+  d3.select(".right").text(right);
+  d3.select(".wrong").text(wrong);
+}
+updateUi();
+
 d3.tsv('cities.tsv', function(err, data) {
   
   data.forEach(function(c) {
@@ -96,7 +111,17 @@ d3.tsv('cities.tsv', function(err, data) {
   
   d3.select(".city-picker")
     .on("change", function() {
-      console.log("selected ", this.options[this.selectedIndex].value);
+      console.log("-------");
+      if(this.options[this.selectedIndex].value == cities[nextCityIndex-1].name) {
+        right++;
+      }
+      else {
+        wrong++;
+      }
+      console.log("guessed: " + this.options[this.selectedIndex].value);
+      console.log("actual : " + cities[nextCityIndex-1].name);
+      updateUi();
+      nextCity();
     })
     .selectAll("option")
       .data(cities)
@@ -109,7 +134,7 @@ d3.tsv('cities.tsv', function(err, data) {
     style: function(d) { return "stroke-width: " + roadSizes[d.properties.kind]; }
   }).addTo(map);
 
-  window.setCity = function(city) {
+  var setCity = function(city) {
     var x = (city.left + city.right) / 2;
     var y = (city.bottom + city.top) / 2;
     var southWest = L.latLng(city.bottom, city.left),
@@ -119,11 +144,12 @@ d3.tsv('cities.tsv', function(err, data) {
     console.log('setting city: ' + city.name, [y, x]);
   }
 
-  var nextCityIndex = 0;
-  (window.nextCity = function() {
+  window.nextCity = function() {
     var city = cities[nextCityIndex++];
     setCity(city);
-  })();
+  };
+
+  nextCity();
 
 });
 
