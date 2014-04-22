@@ -19,14 +19,21 @@
 html, body { height: 100% }
 #map { min-height: 100%; }
 body {
-    margin: 0;
-    font-family: Helvetica, Arial, sans-serif; font-size: 12px;
-    overflow: hidden;
-    background-color: #f00;
+  margin: 0;
+  font-family: Helvetica, Arial, sans-serif; font-size: 12px;
+  overflow: hidden;
+  background-color: #f00;
 }
 .leaflet-popup-content-wrapper {
-    -webkit-border-radius: 5px;
-    border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+.city-picker-container {
+  text-align: center;
+  position: absolute;
+  top: 10px;
+  left: 0px;
+  right: 0px;
 }
 
 path { stroke-linejoin; round; stroke-linecap: round; fill: none}
@@ -42,6 +49,11 @@ img { -webkit-filter: grayscale(100%) brightness(40%) contrast(150%);}
 </head><body>
 
 <div id="map"></div>
+
+<div class="city-picker-container">
+  <select class="city-picker"></select>
+</div>
+
 
 <script type="text/javascript">
 
@@ -74,12 +86,20 @@ d3.tsv('cities.tsv', function(err, data) {
     c.top    = +c.top;
     c.bottom = +c.bottom;
   });
-  cities = d3.nest()
-    .key(function(c) { return c.name; })
-    .rollup(function(d) { return d[0]; })
-    .map(data);
+  cities = d3.values(
+    d3.nest()
+      .key(function(c) { return c.name; })
+      .rollup(function(d) { return d[0]; })
+      .map(data)
+  )
+  .sort(function(a, b) { return d3.ascending(a.name, b.name); });
   console.log(cities);
   
+  d3.select(".city-picker").selectAll("option")
+      .data(cities)
+    .enter().append("option")
+      .text(function(c) { return c.name; });
+
   new L.TileLayer.d3_topoJSON("http://tile.openstreetmap.us/vectiles-highroad/{z}/{x}/{y}.topojson"  , {
     class: "road",
     layerName: "vectile",
@@ -89,7 +109,7 @@ d3.tsv('cities.tsv', function(err, data) {
   var currentCityIndex = 0;
   window.nextCity = function() {
     currentCityIndex++;
-    var city = d3.values(cities)[currentCityIndex];
+    var city = cities[currentCityIndex];
     setCity(city);
   }
 
