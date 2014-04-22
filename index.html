@@ -16,7 +16,7 @@
 
 <style type="text/css">
 html, body { height: 100% }
-#map { min-height: 100%; }
+#map { min-height: 100%; background-color: white; }
 body {
   margin: 0;
   font-family: Helvetica, Arial, sans-serif; font-size: 12px;
@@ -40,6 +40,7 @@ body {
   bottom: 10px;
   left: 0px;
   right: 0px;
+  font-size: 40px;
 }
 
 path { stroke-linejoin; round; stroke-linecap: round; fill: none}
@@ -48,7 +49,7 @@ path.road { stroke: #b42; }
 path.water { stroke: #bcf; fill: #abf; }
 path.landuse { stroke: #bb2; fill: #cc2; opacity: 0.4 }
 path.building { stroke: #f00; fill: #f00; }
-img { -webkit-filter: grayscale(100%) brightness(40%) contrast(150%);}
+/*img { -webkit-filter: grayscale(100%) brightness(40%) contrast(150%);}*/
 
 </style>
 
@@ -61,7 +62,7 @@ img { -webkit-filter: grayscale(100%) brightness(40%) contrast(150%);}
 </div>
 
 <div class="score-container">
-  <span class="right"></span> right / <span class="wrong"></span> wrong</select>
+  <span class="right"></span> right — <span class="wrong"></span> wrong</select>
 </div>
 
 <script type="text/javascript">
@@ -86,11 +87,11 @@ var cities,
     right = 0,
     wrong = 0;
 
-var updateUi = function() {
+var updateScore = function() {
   d3.select(".right").text(right);
   d3.select(".wrong").text(wrong);
 }
-updateUi();
+updateScore();
 
 d3.tsv('cities.tsv', function(err, data) {
   
@@ -109,8 +110,14 @@ d3.tsv('cities.tsv', function(err, data) {
   .sort(function(a, b) { return d3.ascending(a.name, b.name); });
   console.log(cities);
   
+  var instructions = ["Guess the city!", "-------------"];
+
   d3.select(".city-picker")
     .on("change", function() {
+      if(instructions.indexOf(this.options[this.selectedIndex].value) > -1) {
+        this.selectedIndex = 0;
+        return;
+      }
       console.log("-------");
       if(this.options[this.selectedIndex].value == cities[nextCityIndex-1].name) {
         right++;
@@ -120,13 +127,14 @@ d3.tsv('cities.tsv', function(err, data) {
       }
       console.log("guessed: " + this.options[this.selectedIndex].value);
       console.log("actual : " + cities[nextCityIndex-1].name);
-      updateUi();
+      updateScore();
       nextCity();
+      this.selectedIndex = 0;
     })
     .selectAll("option")
-      .data(cities)
+      .data(instructions.concat(cities))
     .enter().append("option")
-      .text(function(c) { return c.name; });
+      .text(function(c) { return typeof c === "string" ? c : c.name; });
 
   new L.TileLayer.d3_topoJSON("http://tile.openstreetmap.us/vectiles-highroad/{z}/{x}/{y}.topojson"  , {
     class: "road",
