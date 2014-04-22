@@ -109,13 +109,6 @@ d3.tsv('cities.tsv', function(err, data) {
     style: function(d) { return "stroke-width: " + roadSizes[d.properties.kind]; }
   }).addTo(map);
 
-  var currentCityIndex = 0;
-  window.nextCity = function() {
-    currentCityIndex++;
-    var city = cities[currentCityIndex];
-    setCity(city);
-  }
-
   window.setCity = function(city) {
     var x = (city.left + city.right) / 2;
     var y = (city.bottom + city.top) / 2;
@@ -125,6 +118,13 @@ d3.tsv('cities.tsv', function(err, data) {
     map.fitBounds(bounds);
     console.log('setting city: ' + city.name, [y, x]);
   }
+
+  var currentCityIndex = 0;
+  (window.nextCity = function() {
+    currentCityIndex++;
+    var city = cities[currentCityIndex];
+    setCity(city);
+  })();
 
 });
 
